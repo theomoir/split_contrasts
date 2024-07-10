@@ -95,5 +95,6 @@ parser.add_argument("--InputContrast", "-ic", type=str, help="Location of contra
 parser.add_argument("--Output", "-o", type=str, help="File output location")
 args = parser.parse_args()
 
+
 if __name__ == "__main__":
     splitContrast(args.InputSample, args.InputContrast, args.Output)
