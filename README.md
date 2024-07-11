@@ -3,6 +3,18 @@
 ### Synopsis
 Splits a sample and contrast file into individual contrasts files, each with their own corresponding sample file adjusted for exclude_samples_values (if specified)
 
+### How to use
+
+~~~bash
+
+/python3 split_contrasts.py --InputContrast 'inputcontrast/handle' --InputSample 'inputsample/handle' --Output 'ouput/handle'
+
+#or alternatively...
+
+/python3 split_contrasts.py -ic 'inputcontrast/handle' -is 'inputsample/handle' -o 'ouput/handle'
+
+~~~
+
 ### Example Input
 
 <u>Contrast Table</u>
