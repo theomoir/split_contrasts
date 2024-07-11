@@ -88,13 +88,11 @@ def GenerateSampleFile(samplesHandle, contrastHeader, line):
 
 
 
-parser = argparse.ArgumentParser(prog="split_contrasts",
-                                 description="split singular sample file and contrast into seperate contrast and sample locations")
-parser.add_argument("--InputSample", "-is", type=str, help="Location of sample file")
-parser.add_argument("--InputContrast", "-ic", type=str, help="Location of contrast file")
-parser.add_argument("--Output", "-o", type=str, help="File output location")
-args = parser.parse_args()
-
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="split_contrasts",
+                                 description="split singular sample file and contrast into seperate contrast and sample locations")
+    parser.add_argument("--InputSample", "-is", type=str, help="Location of sample file")
+    parser.add_argument("--InputContrast", "-ic", type=str, help="Location of contrast file")
+    parser.add_argument("--Output", "-o", type=str, help="File output location")
+    args = parser.parse_args()
     splitContrast(args.InputSample, args.InputContrast, args.Output)
