@@ -14,51 +14,51 @@ def splitContrast(samplesHandle, contrastsHandle, outputHandle):
        -------
             none
     '''
-    with open(contrastsHandle, newline='') as conrastCSVFile:
+    with open(contrastsHandle, newline='') as contrastCSVFile:
         #find dialect of contrast file
-        dialect = csv.Sniffer().sniff(conrastCSVFile.readline())
-        conrastCSVFile.seek(0)
+        dialect = csv.Sniffer().sniff(contrastCSVFile.readline())
+        contrastCSVFile.seek(0)
         #add reader to it
-        contrastReader = csv.DictReader(conrastCSVFile, dialect=dialect)
+        contrastReader = csv.DictReader(contrastCSVFile, dialect=dialect)
         header = contrastReader.fieldnames
         #Read through line of each contrast file
         for row in contrastReader:
             rowID = row['id']
             #Create and write contrast file - contrast file is just the current line of row
-            #but inside of an array
+            #but inside of a list
             WriteCSVFile(f'{outputHandle}/contrast__{rowID}.csv', [row])
             #Create and write a corresponding sample file 
             sampleRows = GenerateSampleFile(samplesHandle, header, row)
             WriteCSVFile(f'{outputHandle}/sample__{rowID}.csv', sampleRows)
 
 
-def WriteCSVFile(outputHandle, lines):
+def WriteCSVFile(outputHandle, CVSdict):
     '''Creates a two line contrast file at outputHandle, signifying one contrast.
        Parameters
        ----------
             outputHandle (string) : Location of where to create file
-            line (list of dictionaries) : The lines to be placed in the body of the file
+            CVSdict (list of dictionaries) : The lines to be placed in the body of the file
        Returns
        -------
             none'''
     #First get the header of the file - also known as the keys of the dictionary
-    header = list(lines[0].keys())
+    header = list(CVSdict[0].keys())
     #Then simply write them to a file
     with open(outputHandle, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=header)
         writer.writeheader()
-        writer.writerows(lines)
+        writer.writerows(CVSdict)
 
 
 
-def GenerateSampleFile(samplesHandle, contrastHeader, line):
+def GenerateSampleFile(samplesHandle, contrastHeader, currentSample):
     '''Creates a list of dictionaries representing the sample file , containing the valid 
        experiments specified in the corresponding contrast file.
        Parameters
        ----------
             samplesHandle (string) : The location of the file containing all samples (experiments)
             contrastHeader (string) : The header of the latter mentioned sample file
-            line (string) : Also from the sample file, specifies what samples (experiments)
+            currentSample (string) : Also from the sample file, specifies what samples (experiments)
                 are to be ignored
        Returns
        -------
@@ -71,17 +71,17 @@ def GenerateSampleFile(samplesHandle, contrastHeader, line):
         #add reader to it
         sampleReader = csv.DictReader(sampleCSVFile, dialect=dialect)
         #Check if exclusion is a paramter, and if so are there any associated values to exclude
-        if ('exclude_samples_col' in contrastHeader and 'exclude_samples_values' in contrastHeader and line['exclude_samples_values'] != ''):
+        if ('exclude_samples_col' in contrastHeader and 'exclude_samples_values' in contrastHeader and currentSample['exclude_samples_values'] != ''):
             #the column to remove from, values to remove
-            excludeSampleCol, excludeSampleValue = line['exclude_samples_col'], line['exclude_samples_values']
+            excludeSampleCol, excludeSampleValue = currentSample['exclude_samples_col'], currentSample['exclude_samples_values']
             #finds the delimiter of the excludedSampleValue (this can be removed if it is
             #always known to be a semicolon)
-            ExclDialect = csv.Sniffer().sniff(excludeSampleValue)
+            exclDialect = csv.Sniffer().sniff(excludeSampleValue)
             #creates set with unwanted class values
-            excludedArray = set(excludeSampleValue.split(ExclDialect.delimiter))
+            excludedArray = set(excludeSampleValue.split(exclDialect.delimiter))
             #go through each row, checking if it contains any excluded classes, and if not appending it to OutputListodDict
-            OutputListOfDict = [row for row in sampleReader if row[excludeSampleCol] not in excludedArray]
-            return OutputListOfDict
+            outputListOfDict = [row for row in sampleReader if row[excludeSampleCol] not in excludedArray]
+            return outputListOfDict
         else:
             #if there is nothing to remove, then it simply turns the reader into a list
             return list(sampleReader)
