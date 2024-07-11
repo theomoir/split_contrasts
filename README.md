@@ -7,11 +7,14 @@ Splits a sample and contrast file into individual contrasts files, each with the
 
 ~~~bash
 
-/python3 split_contrasts.py --InputContrast 'inputcontrast/handle' --InputSample 'inputsample/handle' --Output 'ouput/handle'
+#To create sheets at location of the script
+python3 split_contrasts.py  'inputcontrast/handle' 'inputsample/handle'
 
-#or alternatively...
+#Or to create at a specific destination
+python3 split_contrasts.py  'inputcontrast/handle' 'inputsample/handle' --Output 'ouput/handle'
 
-/python3 split_contrasts.py -ic 'inputcontrast/handle' -is 'inputsample/handle' -o 'ouput/handle'
+#Or alternatively...
+python3 split_contrasts.py 'inputcontrast/handle' 'inputsample/handle' -o 'ouput/handle'
 
 ~~~
 
