@@ -5,7 +5,7 @@ import argparse
 import logging
 import sys
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 def error(msg, exit_code=1):
     logging.error(msg)
@@ -30,18 +30,15 @@ def splitContrast(samplesHandle, contrastsHandle, outputHandle):
             contrastCSVFile.seek(0)
             logging.debug(f"Contrast file dialect delimiter: {dialect.delimiter} Contrast file dialect skip initial space: {dialect.skipinitialspace}")
             logging.debug(f"Contrast file dialect escapechar: {dialect.escapechar} Contrast file dialect quotechar: {dialect.quotechar}")
-            try:
-                #add reader to it
-                contrastReader = csv.DictReader(contrastCSVFile, dialect=dialect)
-            except:
-                error("Could not determine correct dialect of contrast file - make sure your .csv file is properly formatted")
+            #add reader to it
+            contrastReader = csv.DictReader(contrastCSVFile, dialect=dialect)
             header = contrastReader.fieldnames
             #Read through line of each contrast file
             for row in contrastReader:
                 try:
                     rowID = row['id']
                     logging.info(f"Creating {rowID} files...")
-                except:
+                except KeyError:
                     error("cvs file does not contain an 'id' column")
                 #Create and write contrast file - contrast file is just the current line of row
                 #but inside of a list
@@ -50,8 +47,8 @@ def splitContrast(samplesHandle, contrastsHandle, outputHandle):
                 sampleRows = GenerateSampleFile(samplesHandle, header, row)
                 WriteCSVFile(f'{outputHandle}/sample__{rowID}.csv', sampleRows)
             logging.info("Task finished :)")
-    except OSError:
-        error(f"{contrastsHandle} does not exist/ could not be accessed")
+    except IOError:
+        error(f"{contrastsHandle} does not exist")
 
 
 def WriteCSVFile(outputHandle, CVSdict):
@@ -72,8 +69,8 @@ def WriteCSVFile(outputHandle, CVSdict):
             writer = csv.DictWriter(csvfile, fieldnames=header)
             writer.writeheader()
             writer.writerows(CVSdict)
-    except OSError:
-        error(f"{outputHandle} does not exist/ could not be accessed")
+    except IOError:
+        error(f"{outputHandle} does not exist")
         
 
 
@@ -101,10 +98,7 @@ def GenerateSampleFile(samplesHandle, contrastHeader, currentSample):
             logging.debug(f"Sample file dialect delimiter: {dialect.delimiter} Sample file dialect skip initial space: {dialect.skipinitialspace}")
             logging.debug(f"Sample file dialect escapechar: {dialect.escapechar} Sample file dialect quotechar: {dialect.quotechar}")
             #add reader to it
-            try:
-                sampleReader = csv.DictReader(sampleCSVFile, dialect=dialect)
-            except:
-                error("Could not determine correct dialect of sample file - make sure your .csv file is properly formatted")
+            sampleReader = csv.DictReader(sampleCSVFile, dialect=dialect)
             #Check if exclusion is a paramter, and if so are there any associated values to exclude
             if ('exclude_samples_col' in contrastHeader and 'exclude_samples_values' in contrastHeader and currentSample['exclude_samples_values'] != ''):
                 #the column to remove from, values to remove
@@ -114,20 +108,18 @@ def GenerateSampleFile(samplesHandle, contrastHeader, currentSample):
                 exclDialect = csv.Sniffer().sniff(excludeSampleValue)
                 logging.debug(f'exclude_samples_values delimiter sniffed to be: {exclDialect.delimiter}')
                 #creates set with unwanted class values
-                try:
-                    excludedArray = set(excludeSampleValue.split(exclDialect.delimiter))
-                except:
-                    error("Could not determine delimiter (seperating character) of 'exclude_samples_values' - make sure your .csv file is properly formatted")
+                excludedArray = set(excludeSampleValue.split(exclDialect.delimiter))
+                logging.debug(f"Exclude array delimiter found to be {exclDialect.delimiter}")
                 #go through each row, checking if it contains any excluded classes, and if not appending it to OutputListodDict
                 outputListOfDict = [row for row in sampleReader if row[excludeSampleCol] not in excludedArray]
                 logging.debug(f"Tail of sample file list: {outputListOfDict[-1]}")
                 return outputListOfDict
             else:
                 #if there is nothing to remove, then it simply turns the reader into a list
-                logging.warning(f"Input {currentSample['sample']} contains either no 'exlude_samples_col', no 'exlude_samples_values' or 'exlude_samples_col' is empty")
+                logging.info(f"Input {currentSample['sample']} contains either no 'exlude_samples_col', no 'exlude_samples_values' or 'exlude_samples_col' is empty")
                 return list(sampleReader)
-    except OSError:
-        error(f"{samplesHandle} does not exist/ could not be accessed")
+    except IOError:
+        error(f"{samplesHandle} does not exist")
 
 
 
